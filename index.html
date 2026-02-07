@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>AR Award Prototype</title>
+    <!-- A-Frame ライブラリの読み込み -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <!-- AR.js ライブラリの読み込み -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    
+    <style>
+      body { margin: 0; overflow: hidden; }
+      /* ロード画面のスタイル */
+      .arjs-loader {
+        height: 100%; width: 100%; position: absolute; top: 0; left: 0;
+        background-color: rgba(0, 0, 0, 0.8); z-index: 9999;
+        display: flex; justify-content: center; align-items: center;
+      }
+      .arjs-loader div {
+        text-align: center; font-size: 1.25em; color: white; font-family: sans-serif;
+      }
+    </style>
+  </head>
+
+  <body style="margin: 0; overflow: hidden;">
+    <!-- ロード中に表示されるオーバーレイ -->
+    <div class="arjs-loader">
+      <div>Loading AR Award...</div>
+    </div>
+
+    <!-- ARシーンの定義 -->
+    <!-- embedded: HTMLページ内に埋め込む設定 -->
+    <!-- arjs: AR.jsの設定（デバッグUI非表示、検出モードなど） -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+      
+      <!-- マーカーの定義（今回は汎用的な「HIRO」マーカーを使用） -->
+      <a-marker preset="hiro">
+        
+        <!-- トロフィーのグループ（全体をまとめてアニメーションさせる） -->
+        <a-entity position="0 0.5 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
+          
+          <!-- トロフィーのカップ部分（逆円錐） -->
+          <a-cone position="0 1 0" radius-bottom="0.1" radius-top="0.8" height="0.8" color="#FFD700" metalness="0.8" roughness="0.2" opacity="0.9"></a-cone>
+          <!-- カップの中身（底） -->
+          <a-sphere position="0 1 0" radius="0.75" color="#FFA500" opacity="0.5"></a-sphere>
+          
+          <!-- トロフィーの脚 -->
+          <a-cylinder position="0 0.4 0" radius="0.1" height="0.8" color="#FFD700" metalness="0.6" roughness="0.3"></a-cylinder>
+          
+          <!-- トロフィーの土台 -->
+          <a-cylinder position="0 0 0" radius="0.6" height="0.1" color="#8B4513" metalness="0.2" roughness="0.8"></a-cylinder>
+          
+          <!-- 輝くパーティクル（簡易的な表現として小さな球体を周囲に配置） -->
+          <a-entity animation="property: rotation; to: 0 -360 0; loop: true; dur: 5000; easing: linear">
+            <a-sphere position="1 1.5 0" radius="0.05" color="white" shader="flat"></a-sphere>
+            <a-sphere position="-1 0.8 0.5" radius="0.03" color="yellow" shader="flat"></a-sphere>
+            <a-sphere position="0 2 -0.8" radius="0.04" color="cyan" shader="flat"></a-sphere>
+          </a-entity>
+
+        </a-entity>
+
+        <!-- テキスト表示 -->
+        <a-entity position="0 2.5 0" rotation="0 0 0"
+                  animation="property: scale; dir: alternate; dur: 1000; to: 1.2 1.2 1.2; loop: true">
+          <a-text value="WINNER!" align="center" color="#FFF" width="8" shader="msdf" font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/roboto/Roboto-Bold.json"></a-text>
+        </a-entity>
+
+      </a-marker>
+
+      <!-- カメラの設定 -->
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>
