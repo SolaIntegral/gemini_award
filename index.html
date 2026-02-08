@@ -1,346 +1,83 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Certificate (model-viewer)</title>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3つのAR賞状</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
-    <!-- model-viewerの読み込み -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #1a202c;
-            font-family: 'Noto Sans JP', sans-serif;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* model-viewer本体のデザイン */
-        model-viewer {
-            width: 100%;
-            height: 100%;
-            background-color: #1a202c;
-            --poster-color: transparent;
-        }
-        
-        /* model-viewerのデフォルトローディング表示を非表示 */
-        model-viewer::part(default-ar-button) {
-            display: none;
-        }
-        
-        /* ローディングスピナーの非表示 */
-        model-viewer::part(default-progress-bar) {
-            display: none;
-        }
-
-        /* カスタムARボタン */
-        .ar-button {
-            background-color: white;
-            border-radius: 4px;
-            border: none;
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            padding: 12px 24px;
-            font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        /* タイトルオーバーレイ */
-        .title-overlay {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            pointer-events: none; /* 3D操作の邪魔にならないように */
-            z-index: 10;
-        }
-
-        .title-box {
-            background: rgba(255, 215, 0, 0.9); /* ゴールド背景 */
-            color: #000;
-            padding: 10px 30px;
-            border-radius: 50px;
-            display: inline-block;
-            font-weight: bold;
-            font-size: 24px;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .subtitle {
-            margin-top: 10px;
-            color: #fff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            font-size: 16px;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* AR起動中のスタイル調整 */
-        :not(:defined) > * {
-            display: none;
-        }
-        
-        /* ローディング表示の制御 */
-        model-viewer.loading::before {
-            content: 'Loading AR Award...';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 18px;
-            z-index: 100;
-        }
-        
-        model-viewer:not(.loading)::before {
-            display: none;
-        }
-        
-        /* ARセッション中のスタイル */
-        model-viewer[ar-status="session-started"] {
-            background-color: transparent;
-        }
+      /* 賞状のスキャンを促すガイドUI */
+      #scanning-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+        display: flex; justify-content: center; align-items: center;
+        pointer-events: none; z-index: 999;
+      }
+      .guide-box {
+        width: 70vw; height: 50vw;
+        border: 2px dashed rgba(255, 255, 255, 0.7);
+        border-radius: 10px;
+      }
     </style>
-</head>
-<body>
-
-    <!-- タイトル表示（画面手前に固定） -->
-    <div class="title-overlay">
-        <div class="title-box">WINNER!</div>
-        <div class="subtitle">Gemini Hackathon 2025</div>
+  </head>
+  <body>
+    <div id="scanning-overlay">
+      <div class="guide-box"></div>
     </div>
 
-    <!-- 
-        model-viewerの設定
-        src: 3Dモデル(.glb)のURL。現在はサンプルの宇宙飛行士です。
-             ここをトロフィーの.glbファイルのURLに書き換えてください。
-        ar: AR機能を有効化
-        ar-modes: "webxr scene-viewer quick-look" 
-                  -> Android(WebXR/SceneViewer)とiOS(Quick Look)の両対応設定
-        camera-controls: 指で回転・拡大縮小可能に
-        auto-rotate: 自動回転
-        shadow-intensity: 影の濃さ
-    -->
-    <model-viewer 
-        id="award-viewer"
-        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-        ar 
-        ar-modes="scene-viewer webxr quick-look" 
-        camera-controls 
-        auto-rotate
-        shadow-intensity="1"
-        camera-orbit="0deg 90deg 2.5m"
-        alt="A 3D model of an award"
-        loading="auto"
-        reveal="auto">
-        
-        <!-- AR起動ボタンのデザイン -->
-        <button slot="ar-button" class="ar-button">
-            👋 ARで実寸大表示
-        </button>
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; filterMinCF:0.0001; filterBeta: 0.001;" 
+             color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        </a-assets>
 
-    </model-viewer>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <script>
-        // model-viewer要素を取得
-        const modelViewer = document.querySelector('model-viewer');
-        
-        // 初期状態でローディングクラスを追加
-        if (modelViewer) {
-            modelViewer.classList.add('loading');
-        }
-        
-        // ローディング状態を管理
-        let isLoading = true;
-        let arSessionActive = false;
-        
-        // model-viewerが定義されるまで待機
-        customElements.whenDefined('model-viewer').then(() => {
-            console.log('model-viewerが定義されました');
-        });
-        
-        // モデルの読み込み完了時
-        modelViewer.addEventListener('load', () => {
-            console.log('モデルの読み込みが完了しました');
-            isLoading = false;
-            // ローディング表示を非表示にする
-            modelViewer.classList.remove('loading');
-        });
-        
-        // モデルの読み込み開始時
-        modelViewer.addEventListener('progress', (event) => {
-            const progress = event.detail.totalProgress;
-            console.log('読み込み進捗:', Math.round(progress * 100) + '%');
-            if (progress >= 1.0) {
-                isLoading = false;
-                modelViewer.classList.remove('loading');
-            }
-        });
-        
-        // AR状態の監視
-        modelViewer.addEventListener('ar-status', (event) => {
-            const status = event.detail.status;
-            console.log('AR Status:', status, event.detail);
-            
-            switch(status) {
-                case 'not-presenting':
-                    // ARセッションが開始されていない、または終了した
-                    arSessionActive = false;
-                    isLoading = false;
-                    modelViewer.classList.remove('loading');
-                    console.log('ARセッションは非アクティブです');
-                    break;
-                    
-                case 'session-started':
-                    // ARセッションが開始された
-                    arSessionActive = true;
-                    isLoading = false;
-                    modelViewer.classList.remove('loading');
-                    console.log('ARセッションが開始されました');
-                    break;
-                    
-                case 'failed':
-                    // ARセッションの開始に失敗
-                    console.error('ARセッションの開始に失敗しました', event.detail);
-                    isLoading = false;
-                    modelViewer.classList.remove('loading');
-                    // エラーメッセージを表示（ただし、ユーザーが既にカメラ許可をした場合は表示しない）
-                    if (event.detail.message && !event.detail.message.includes('permission')) {
-                        alert('AR機能の起動に失敗しました: ' + event.detail.message);
-                    }
-                    break;
-                    
-                case 'not-supported':
-                    console.warn('AR機能はこのデバイスでサポートされていません');
-                    isLoading = false;
-                    modelViewer.classList.remove('loading');
-                    break;
-                    
-                default:
-                    console.log('未知のARステータス:', status);
-                    // ローディングを解除（安全のため）
-                    if (status !== 'presenting') {
-                        isLoading = false;
-                        modelViewer.classList.remove('loading');
-                    }
-            }
-        });
-        
-        // ARトラッキング状態の監視
-        modelViewer.addEventListener('ar-tracking', (event) => {
-            console.log('AR Tracking:', event.detail.status);
-            if (event.detail.status === 'tracking') {
-                isLoading = false;
-            }
-        });
-        
-        // エラーハンドリング
-        modelViewer.addEventListener('error', (event) => {
-            console.error('Model viewer error:', event.detail);
-            isLoading = false;
-            
-            // ユーザーにエラーを通知
-            if (event.detail.type === 'load') {
-                alert('3Dモデルの読み込みに失敗しました。ネットワーク接続を確認してください。');
-            }
-        });
-        
-        // WebXR APIのサポート確認と初期化
-        if ('xr' in navigator) {
-            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-                console.log('WebXR AR supported:', supported);
-                if (!supported) {
-                    console.warn('WebXR ARはサポートされていません。Scene Viewerにフォールバックします。');
-                }
-            }).catch((error) => {
-                console.error('WebXR check error:', error);
-            });
-        }
-        
-        // カメラ許可の確認（Android用）
-        async function checkCameraPermission() {
-            try {
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    // カメラアクセスが許可されたら、ストリームを停止
-                    stream.getTracks().forEach(track => track.stop());
-                    console.log('カメラの許可が確認されました');
-                    return true;
-                }
-            } catch (error) {
-                console.error('カメラアクセスのエラー:', error);
-                alert('カメラの許可が必要です。設定からカメラの許可を有効にしてください。');
-                return false;
-            }
-        }
-        
-        // ARボタンクリック時の処理
-        const arButton = document.querySelector('.ar-button');
-        if (arButton) {
-            arButton.addEventListener('click', async () => {
-                console.log('ARボタンがクリックされました');
-                
-                // WebXRを使用する場合のみカメラ許可を確認
-                // Scene Viewerの場合は不要（ネイティブアプリとして動作）
-                if (navigator.xr) {
-                    try {
-                        const isWebXRSupported = await navigator.xr.isSessionSupported('immersive-ar');
-                        if (isWebXRSupported) {
-                            // WebXRを使用する場合、カメラ許可を確認
-                            const hasPermission = await checkCameraPermission();
-                            if (!hasPermission) {
-                                return; // 許可がなければ処理を中断
-                            }
-                        }
-                    } catch (error) {
-                        console.log('WebXR check failed, using Scene Viewer:', error);
-                    }
-                }
-                
-                // ARセッションを開始（Scene ViewerまたはWebXR）
-                try {
-                    // model-viewerが自動的に適切なARモードを選択します
-                    // 手動でactivateAR()を呼ぶ必要はありません
-                    console.log('ARセッションの開始を試みます...');
-                } catch (error) {
-                    console.error('AR activation error:', error);
-                    alert('AR機能の起動に失敗しました: ' + error.message);
-                }
-            });
-        }
-        
-        // タイムアウト処理（5秒後にローディングを解除）
-        setTimeout(() => {
-            if (isLoading && !arSessionActive) {
-                console.warn('ローディングがタイムアウトしました。強制的にローディングを解除します。');
-                isLoading = false;
-                modelViewer.classList.remove('loading');
-            }
-        }, 5000);
-        
-        // ページが読み込まれた時点でローディングを解除（モデルが既に読み込まれている場合）
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (modelViewer.loaded) {
-                    console.log('モデルは既に読み込まれています');
-                    isLoading = false;
-                    modelViewer.classList.remove('loading');
-                }
-            }, 1000);
-        });
-    </script>
-</body>
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-entity animation="property: rotation; to: 0 360 0; dur: 8000; loop: true; easing: linear">
+          <a-cone position="0 0.5 0" height="1" radius-bottom="0.05" radius-top="0.5" color="#FFD700" material="metalness:1; roughness:0.2"></a-cone>
+          <a-sphere position="0 1.2 0" radius="0.4" color="#FFD700" material="metalness:1; roughness:0.2"></a-sphere>
+        </a-entity>
+        <a-text value="GOLD PRIZE" position="0 1.5 0.5" align="center" color="#FFF" width="4"
+                animation="property: scale; from: 0 0 0; to: 1 1 1; dur: 1000; easing: easeOutElastic"></a-text>
+        <a-entity position="0 0 0" animation="property: rotation; to: 0 -360 0; dur: 10000; loop: true">
+            <a-box position="0.8 1 0" width="0.1" height="0.1" depth="0.01" color="red"></a-box>
+            <a-box position="-0.8 0.5 0.5" width="0.1" height="0.1" depth="0.01" color="white"></a-box>
+        </a-entity>
+      </a-entity>
+
+      <a-entity mindar-image-target="targetIndex: 1">
+        <a-entity animation="property: rotation; to: 0 360 0; dur: 8000; loop: true; easing: linear">
+          <a-cone position="0 0.5 0" height="0.8" radius-bottom="0.05" radius-top="0.4" color="#C0C0C0" material="metalness:1; roughness:0.2"></a-cone>
+        </a-entity>
+        <a-text value="SILVER PRIZE" position="0 1.2 0" align="center" color="#FFF" width="4"></a-text>
+      </a-entity>
+
+      <a-entity mindar-image-target="targetIndex: 2">
+         <a-entity animation="property: rotation; to: 0 360 0; dur: 8000; loop: true; easing: linear">
+          <a-cone position="0 0.5 0" height="0.6" radius-bottom="0.05" radius-top="0.3" color="#CD7F32" material="metalness:0.8; roughness:0.5"></a-cone>
+        </a-entity>
+        <a-text value="BRONZE PRIZE" position="0 1.0 0" align="center" color="#FFF" width="4"></a-text>
+      </a-entity>
+
+    </a-scene>
+  </body>
 </html>
+```
+
+### 安定させるための3つのポイント
+
+1.  **画像のデザインを変える:**
+    3つの賞状が「文字だけ違う」デザインだと、AIが区別できずに誤認識（金賞なのに銀が出てくるなど）します。
+    * 金賞は背景が黄色っぽい、銀賞は青っぽいなど、**色味やロゴの配置を大きく変える**のがコツです。
+2.  **照明:**
+    会場が暗いと認識しづらくなります。スマホのライトをつけるか、明るい場所でかざしてもらうようアナウンスしてください。
+3.  **枠線:**
+    賞状に太めの「飾り枠」をつけると、AIが「ここが平面だ！」と認識しやすくなり、トロフィーがプルプル震えにくくなります。
+
+### 必要なファイル構成
+GitHubにアップするときは以下の2つがあれば動きます。
+```
+/ (ルートフォルダ)
+  ├── index.html     (上のコード)
+  └── targets.mind   (STEP1で作ったファイル)
