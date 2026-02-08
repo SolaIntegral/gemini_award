@@ -25,6 +25,16 @@
             background-color: #1a202c;
             --poster-color: transparent;
         }
+        
+        /* model-viewerのデフォルトローディング表示を非表示 */
+        model-viewer::part(default-ar-button) {
+            display: none;
+        }
+        
+        /* ローディングスピナーの非表示 */
+        model-viewer::part(default-progress-bar) {
+            display: none;
+        }
 
         /* カスタムARボタン */
         .ar-button {
@@ -82,6 +92,27 @@
         :not(:defined) > * {
             display: none;
         }
+        
+        /* ローディング表示の制御 */
+        model-viewer.loading::before {
+            content: 'Loading AR Award...';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 100;
+        }
+        
+        model-viewer:not(.loading)::before {
+            display: none;
+        }
+        
+        /* ARセッション中のスタイル */
+        model-viewer[ar-status="session-started"] {
+            background-color: transparent;
+        }
     </style>
 </head>
 <body>
@@ -104,14 +135,17 @@
         shadow-intensity: 影の濃さ
     -->
     <model-viewer 
+        id="award-viewer"
         src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
         ar 
-        ar-modes="webxr scene-viewer quick-look" 
+        ar-modes="scene-viewer webxr quick-look" 
         camera-controls 
         auto-rotate
         shadow-intensity="1"
         camera-orbit="0deg 90deg 2.5m"
-        alt="A 3D model of an award">
+        alt="A 3D model of an award"
+        loading="auto"
+        reveal="auto">
         
         <!-- AR起動ボタンのデザイン -->
         <button slot="ar-button" class="ar-button">
@@ -121,8 +155,192 @@
     </model-viewer>
 
     <script>
-        // 必要であればここに動的な制御を追加できます
-        // 例: URLパラメータから名前を取得して表示を変えるなど
+        // model-viewer要素を取得
+        const modelViewer = document.querySelector('model-viewer');
+        
+        // 初期状態でローディングクラスを追加
+        if (modelViewer) {
+            modelViewer.classList.add('loading');
+        }
+        
+        // ローディング状態を管理
+        let isLoading = true;
+        let arSessionActive = false;
+        
+        // model-viewerが定義されるまで待機
+        customElements.whenDefined('model-viewer').then(() => {
+            console.log('model-viewerが定義されました');
+        });
+        
+        // モデルの読み込み完了時
+        modelViewer.addEventListener('load', () => {
+            console.log('モデルの読み込みが完了しました');
+            isLoading = false;
+            // ローディング表示を非表示にする
+            modelViewer.classList.remove('loading');
+        });
+        
+        // モデルの読み込み開始時
+        modelViewer.addEventListener('progress', (event) => {
+            const progress = event.detail.totalProgress;
+            console.log('読み込み進捗:', Math.round(progress * 100) + '%');
+            if (progress >= 1.0) {
+                isLoading = false;
+                modelViewer.classList.remove('loading');
+            }
+        });
+        
+        // AR状態の監視
+        modelViewer.addEventListener('ar-status', (event) => {
+            const status = event.detail.status;
+            console.log('AR Status:', status, event.detail);
+            
+            switch(status) {
+                case 'not-presenting':
+                    // ARセッションが開始されていない、または終了した
+                    arSessionActive = false;
+                    isLoading = false;
+                    modelViewer.classList.remove('loading');
+                    console.log('ARセッションは非アクティブです');
+                    break;
+                    
+                case 'session-started':
+                    // ARセッションが開始された
+                    arSessionActive = true;
+                    isLoading = false;
+                    modelViewer.classList.remove('loading');
+                    console.log('ARセッションが開始されました');
+                    break;
+                    
+                case 'failed':
+                    // ARセッションの開始に失敗
+                    console.error('ARセッションの開始に失敗しました', event.detail);
+                    isLoading = false;
+                    modelViewer.classList.remove('loading');
+                    // エラーメッセージを表示（ただし、ユーザーが既にカメラ許可をした場合は表示しない）
+                    if (event.detail.message && !event.detail.message.includes('permission')) {
+                        alert('AR機能の起動に失敗しました: ' + event.detail.message);
+                    }
+                    break;
+                    
+                case 'not-supported':
+                    console.warn('AR機能はこのデバイスでサポートされていません');
+                    isLoading = false;
+                    modelViewer.classList.remove('loading');
+                    break;
+                    
+                default:
+                    console.log('未知のARステータス:', status);
+                    // ローディングを解除（安全のため）
+                    if (status !== 'presenting') {
+                        isLoading = false;
+                        modelViewer.classList.remove('loading');
+                    }
+            }
+        });
+        
+        // ARトラッキング状態の監視
+        modelViewer.addEventListener('ar-tracking', (event) => {
+            console.log('AR Tracking:', event.detail.status);
+            if (event.detail.status === 'tracking') {
+                isLoading = false;
+            }
+        });
+        
+        // エラーハンドリング
+        modelViewer.addEventListener('error', (event) => {
+            console.error('Model viewer error:', event.detail);
+            isLoading = false;
+            
+            // ユーザーにエラーを通知
+            if (event.detail.type === 'load') {
+                alert('3Dモデルの読み込みに失敗しました。ネットワーク接続を確認してください。');
+            }
+        });
+        
+        // WebXR APIのサポート確認と初期化
+        if ('xr' in navigator) {
+            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+                console.log('WebXR AR supported:', supported);
+                if (!supported) {
+                    console.warn('WebXR ARはサポートされていません。Scene Viewerにフォールバックします。');
+                }
+            }).catch((error) => {
+                console.error('WebXR check error:', error);
+            });
+        }
+        
+        // カメラ許可の確認（Android用）
+        async function checkCameraPermission() {
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    // カメラアクセスが許可されたら、ストリームを停止
+                    stream.getTracks().forEach(track => track.stop());
+                    console.log('カメラの許可が確認されました');
+                    return true;
+                }
+            } catch (error) {
+                console.error('カメラアクセスのエラー:', error);
+                alert('カメラの許可が必要です。設定からカメラの許可を有効にしてください。');
+                return false;
+            }
+        }
+        
+        // ARボタンクリック時の処理
+        const arButton = document.querySelector('.ar-button');
+        if (arButton) {
+            arButton.addEventListener('click', async () => {
+                console.log('ARボタンがクリックされました');
+                
+                // WebXRを使用する場合のみカメラ許可を確認
+                // Scene Viewerの場合は不要（ネイティブアプリとして動作）
+                if (navigator.xr) {
+                    try {
+                        const isWebXRSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                        if (isWebXRSupported) {
+                            // WebXRを使用する場合、カメラ許可を確認
+                            const hasPermission = await checkCameraPermission();
+                            if (!hasPermission) {
+                                return; // 許可がなければ処理を中断
+                            }
+                        }
+                    } catch (error) {
+                        console.log('WebXR check failed, using Scene Viewer:', error);
+                    }
+                }
+                
+                // ARセッションを開始（Scene ViewerまたはWebXR）
+                try {
+                    // model-viewerが自動的に適切なARモードを選択します
+                    // 手動でactivateAR()を呼ぶ必要はありません
+                    console.log('ARセッションの開始を試みます...');
+                } catch (error) {
+                    console.error('AR activation error:', error);
+                    alert('AR機能の起動に失敗しました: ' + error.message);
+                }
+            });
+        }
+        
+        // タイムアウト処理（5秒後にローディングを解除）
+        setTimeout(() => {
+            if (isLoading && !arSessionActive) {
+                console.warn('ローディングがタイムアウトしました。強制的にローディングを解除します。');
+                isLoading = false;
+                modelViewer.classList.remove('loading');
+            }
+        }, 5000);
+        
+        // ページが読み込まれた時点でローディングを解除（モデルが既に読み込まれている場合）
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (modelViewer.loaded) {
+                    console.log('モデルは既に読み込まれています');
+                    isLoading = false;
+                    modelViewer.classList.remove('loading');
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>
