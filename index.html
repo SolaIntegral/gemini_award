@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>3つのAR賞状</title>
+    <title>AR Award Ceremony</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    
+
     <style>
       /* 賞状のスキャンを促すガイドUI */
       #scanning-overlay {
@@ -17,10 +17,10 @@
         width: 70vw; height: 50vw;
         border: 2px dashed rgba(255, 255, 255, 0.7);
         border-radius: 10px;
-      }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div id="scanning-overlay">
       <div class="guide-box"></div>
     </div>
@@ -29,55 +29,319 @@
              color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        </a-assets>
+        <!-- 花吹雪用のパーティクルシステム -->
+      </a-assets>
+
+      <!-- 環境光とライティング -->
+      <a-light type="ambient" color="#ffffff" intensity="0.6"></a-light>
+      <a-light type="directional" position="2 5 3" intensity="0.8" cast-shadow="true"></a-light>
+      <a-light type="point" position="-2 3 2" intensity="0.5"></a-light>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-entity animation="property: rotation; to: 0 360 0; dur: 8000; loop: true; easing: linear">
-          <a-cone position="0 0.5 0" height="1" radius-bottom="0.05" radius-top="0.5" color="#FFD700" material="metalness:1; roughness:0.2"></a-cone>
-          <a-sphere position="0 1.2 0" radius="0.4" color="#FFD700" material="metalness:1; roughness:0.2"></a-sphere>
+      <!-- Target 0: Creative Spark Award (赤色) - 元GOLD -->
+      <a-entity mindar-image-target="targetIndex: 0" id="award-0">
+        <!-- リアルなトロフィー構造 -->
+        <a-entity id="trophy-0" animation="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
+          <!-- 台座 -->
+          <a-cylinder position="0 0.1 0" radius="0.4" height="0.2" color="#8B0000" 
+                      material="metalness:0.3; roughness:0.7"></a-cylinder>
+          <a-cylinder position="0 0.05 0" radius="0.35" height="0.1" color="#A00000" 
+                      material="metalness:0.2; roughness:0.8"></a-cylinder>
+          
+          <!-- トロフィーの柱 -->
+          <a-cylinder position="0 0.3 0" radius="0.08" height="0.4" color="#DC143C" 
+                      material="metalness:0.9; roughness:0.1"></a-cylinder>
+          
+          <!-- 装飾リング -->
+          <a-torus position="0 0.4 0" radius="0.12" radius-tubular="0.02" color="#FF1744" 
+                   material="metalness:0.95; roughness:0.05"></a-torus>
+          <a-torus position="0 0.5 0" radius="0.15" radius-tubular="0.02" color="#FF1744" 
+                   material="metalness:0.95; roughness:0.05"></a-torus>
+          
+          <!-- メインカップ部分 -->
+          <a-cone position="0 0.75 0" height="0.5" radius-bottom="0.18" radius-top="0.25" 
+                  color="#FF1744" material="metalness:0.95; roughness:0.05"></a-cone>
+          
+          <!-- カップの内側 -->
+          <a-cone position="0 0.8 0" height="0.35" radius-bottom="0.15" radius-top="0.22" 
+                  color="#FF6B9D" material="metalness:0.8; roughness:0.1"></a-cone>
+          
+          <!-- トップの星 -->
+          <a-entity position="0 1.15 0" rotation="0 0 0">
+            <a-cone position="0 0.1 0" height="0.15" radius-bottom="0.12" radius-top="0.02" 
+                    color="#FFD700" material="metalness:1; roughness:0.1"></a-cone>
+            <a-sphere position="0 0.2 0" radius="0.08" color="#FFD700" 
+                      material="metalness:1; roughness:0.1"></a-sphere>
+          </a-entity>
+          
+          <!-- 装飾的なリボン -->
+          <a-box position="0.2 0.6 0" width="0.15" height="0.05" depth="0.02" 
+                 color="#FFD700" rotation="0 0 45" material="metalness:0.7; roughness:0.3"></a-box>
+          <a-box position="-0.2 0.6 0" width="0.15" height="0.05" depth="0.02" 
+                 color="#FFD700" rotation="0 0 -45" material="metalness:0.7; roughness:0.3"></a-box>
         </a-entity>
-        <a-text value="GOLD PRIZE" position="0 1.5 0.5" align="center" color="#FFF" width="4"
-                animation="property: scale; from: 0 0 0; to: 1 1 1; dur: 1000; easing: easeOutElastic"></a-text>
-        <a-entity position="0 0 0" animation="property: rotation; to: 0 -360 0; dur: 10000; loop: true">
-            <a-box position="0.8 1 0" width="0.1" height="0.1" depth="0.01" color="red"></a-box>
-            <a-box position="-0.8 0.5 0.5" width="0.1" height="0.1" depth="0.01" color="white"></a-box>
-        </a-entity>
+        
+        <!-- 賞の名前テキスト -->
+        <a-text value="Creative Spark Award" position="0 1.5 0.5" align="center" 
+                color="#FF1744" width="5" font="exo2bold"
+                animation="property: scale; from: 0 0 0; to: 1 1 1; dur: 1500; easing: easeOutElastic"></a-text>
+        
+        <!-- 花吹雪エフェクト -->
+        <a-entity id="confetti-0" class="confetti-container"></a-entity>
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1">
-        <a-entity animation="property: rotation; to: 0 360 0; dur: 8000; loop: true; easing: linear">
-          <a-cone position="0 0.5 0" height="0.8" radius-bottom="0.05" radius-top="0.4" color="#C0C0C0" material="metalness:1; roughness:0.2"></a-cone>
+      <!-- Target 1: Grand Creator Award (黄色/金色) - 元SILVER -->
+      <a-entity mindar-image-target="targetIndex: 1" id="award-1">
+        <!-- リアルなトロフィー構造 -->
+        <a-entity id="trophy-1" animation="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
+          <!-- 台座 -->
+          <a-cylinder position="0 0.1 0" radius="0.45" height="0.2" color="#8B7500" 
+                      material="metalness:0.3; roughness:0.7"></a-cylinder>
+          <a-cylinder position="0 0.05 0" radius="0.4" height="0.1" color="#B8860B" 
+                      material="metalness:0.2; roughness:0.8"></a-cylinder>
+          
+          <!-- トロフィーの柱 -->
+          <a-cylinder position="0 0.3 0" radius="0.09" height="0.5" color="#FFD700" 
+                      material="metalness:0.95; roughness:0.05"></a-cylinder>
+          
+          <!-- 装飾リング -->
+          <a-torus position="0 0.45 0" radius="0.14" radius-tubular="0.025" color="#FFD700" 
+                   material="metalness:0.98; roughness:0.02"></a-torus>
+          <a-torus position="0 0.6 0" radius="0.18" radius-tubular="0.025" color="#FFD700" 
+                   material="metalness:0.98; roughness:0.02"></a-torus>
+          
+          <!-- メインカップ部分 -->
+          <a-cone position="0 0.9 0" height="0.6" radius-bottom="0.2" radius-top="0.3" 
+                  color="#FFD700" material="metalness:0.98; roughness:0.02"></a-cone>
+          
+          <!-- カップの内側 -->
+          <a-cone position="0 0.95 0" height="0.45" radius-bottom="0.17" radius-top="0.27" 
+                  color="#FFE44D" material="metalness:0.9; roughness:0.05"></a-cone>
+          
+          <!-- トップの王冠 -->
+          <a-entity position="0 1.35 0" rotation="0 0 0">
+            <a-cone position="0 0.15 0" height="0.2" radius-bottom="0.15" radius-top="0.03" 
+                    color="#FFD700" material="metalness:1; roughness:0.01"></a-cone>
+            <a-sphere position="0 0.3 0" radius="0.1" color="#FFD700" 
+                      material="metalness:1; roughness:0.01"></a-sphere>
+            <!-- 王冠の突起 -->
+            <a-box position="0.12 0.25 0" width="0.04" height="0.08" depth="0.02" 
+                   color="#FFD700" material="metalness:1; roughness:0.01"></a-box>
+            <a-box position="-0.12 0.25 0" width="0.04" height="0.08" depth="0.02" 
+                   color="#FFD700" material="metalness:1; roughness:0.01"></a-box>
+          </a-entity>
+          
+          <!-- 装飾的なリボン -->
+          <a-box position="0.25 0.7 0" width="0.18" height="0.06" depth="0.02" 
+                 color="#FFA500" rotation="0 0 50" material="metalness:0.8; roughness:0.2"></a-box>
+          <a-box position="-0.25 0.7 0" width="0.18" height="0.06" depth="0.02" 
+                 color="#FFA500" rotation="0 0 -50" material="metalness:0.8; roughness:0.2"></a-box>
         </a-entity>
-        <a-text value="SILVER PRIZE" position="0 1.2 0" align="center" color="#FFF" width="4"></a-text>
+        
+        <!-- 賞の名前テキスト -->
+        <a-text value="Grand Creator Award" position="0 1.6 0.5" align="center" 
+                color="#FFD700" width="5" font="exo2bold"
+                animation="property: scale; from: 0 0 0; to: 1 1 1; dur: 1500; easing: easeOutElastic"></a-text>
+        
+        <!-- 花吹雪エフェクト -->
+        <a-entity id="confetti-1" class="confetti-container"></a-entity>
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 2">
-         <a-entity animation="property: rotation; to: 0 360 0; dur: 8000; loop: true; easing: linear">
-          <a-cone position="0 0.5 0" height="0.6" radius-bottom="0.05" radius-top="0.3" color="#CD7F32" material="metalness:0.8; roughness:0.5"></a-cone>
+      <!-- Target 2: Best Co-Creation Award (青色) - 元BRONZE -->
+      <a-entity mindar-image-target="targetIndex: 2" id="award-2">
+        <!-- リアルなトロフィー構造 -->
+        <a-entity id="trophy-2" animation="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
+          <!-- 台座 -->
+          <a-cylinder position="0 0.1 0" radius="0.4" height="0.2" color="#001F5C" 
+                      material="metalness:0.3; roughness:0.7"></a-cylinder>
+          <a-cylinder position="0 0.05 0" radius="0.35" height="0.1" color="#003366" 
+                      material="metalness:0.2; roughness:0.8"></a-cylinder>
+          
+          <!-- トロフィーの柱 -->
+          <a-cylinder position="0 0.3 0" radius="0.08" height="0.4" color="#1E90FF" 
+                      material="metalness:0.9; roughness:0.1"></a-cylinder>
+          
+          <!-- 装飾リング -->
+          <a-torus position="0 0.4 0" radius="0.12" radius-tubular="0.02" color="#4169E1" 
+                   material="metalness:0.95; roughness:0.05"></a-torus>
+          <a-torus position="0 0.5 0" radius="0.15" radius-tubular="0.02" color="#4169E1" 
+                   material="metalness:0.95; roughness:0.05"></a-torus>
+          
+          <!-- メインカップ部分 -->
+          <a-cone position="0 0.75 0" height="0.5" radius-bottom="0.18" radius-top="0.25" 
+                  color="#4169E1" material="metalness:0.95; roughness:0.05"></a-cone>
+          
+          <!-- カップの内側 -->
+          <a-cone position="0 0.8 0" height="0.35" radius-bottom="0.15" radius-top="0.22" 
+                  color="#87CEEB" material="metalness:0.8; roughness:0.1"></a-cone>
+          
+          <!-- トップの星 -->
+          <a-entity position="0 1.15 0" rotation="0 0 0">
+            <a-cone position="0 0.1 0" height="0.15" radius-bottom="0.12" radius-top="0.02" 
+                    color="#00BFFF" material="metalness:1; roughness:0.1"></a-cone>
+            <a-sphere position="0 0.2 0" radius="0.08" color="#00BFFF" 
+                      material="metalness:1; roughness:0.1"></a-sphere>
+          </a-entity>
+          
+          <!-- 装飾的なリボン -->
+          <a-box position="0.2 0.6 0" width="0.15" height="0.05" depth="0.02" 
+                 color="#00CED1" rotation="0 0 45" material="metalness:0.7; roughness:0.3"></a-box>
+          <a-box position="-0.2 0.6 0" width="0.15" height="0.05" depth="0.02" 
+                 color="#00CED1" rotation="0 0 -45" material="metalness:0.7; roughness:0.3"></a-box>
         </a-entity>
-        <a-text value="BRONZE PRIZE" position="0 1.0 0" align="center" color="#FFF" width="4"></a-text>
+        
+        <!-- 賞の名前テキスト -->
+        <a-text value="Best Co-Creation Award" position="0 1.5 0.5" align="center" 
+                color="#4169E1" width="5" font="exo2bold"
+                animation="property: scale; from: 0 0 0; to: 1 1 1; dur: 1500; easing: easeOutElastic"></a-text>
+        
+        <!-- 花吹雪エフェクト -->
+        <a-entity id="confetti-2" class="confetti-container"></a-entity>
       </a-entity>
 
     </a-scene>
-  </body>
+
+    <script>
+      // 花吹雪エフェクトを生成する関数
+      function createConfetti(containerId, colors) {
+        const container = document.querySelector('#' + containerId);
+        if (!container) return;
+        
+        const confettiCount = 40;
+        const confettiElements = [];
+        
+        for (let i = 0; i < confettiCount; i++) {
+          // ランダムに球体またはボックスを選択
+          const isBox = Math.random() > 0.5;
+          const confetti = document.createElement(isBox ? 'a-box' : 'a-sphere');
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          
+          // 初期位置（トロフィーの上から）
+          const x = (Math.random() - 0.5) * 1.5;
+          const y = 1.5 + Math.random() * 0.5;
+          const z = (Math.random() - 0.5) * 1.5;
+          
+          // 終了位置
+          const endX = x + (Math.random() - 0.5) * 1.0;
+          const endY = y - 2.5 - Math.random() * 1.0;
+          const endZ = z + (Math.random() - 0.5) * 1.0;
+          
+          if (isBox) {
+            confetti.setAttribute('width', '0.04');
+            confetti.setAttribute('height', '0.04');
+            confetti.setAttribute('depth', '0.04');
+          } else {
+            confetti.setAttribute('radius', '0.025');
+          }
+          
+          confetti.setAttribute('color', color);
+          confetti.setAttribute('position', `${x} ${y} ${z}`);
+          
+          // 落下アニメーション
+          const duration = 2000 + Math.random() * 2000;
+          confetti.setAttribute('animation', 
+            `property: position; 
+             to: ${endX} ${endY} ${endZ}; 
+             dur: ${duration}; 
+             easing: easeInQuad`);
+          
+          // 回転アニメーション
+          const rotX = Math.random() * 360;
+          const rotY = Math.random() * 360;
+          const rotZ = Math.random() * 360;
+          confetti.setAttribute('animation__rotation',
+            `property: rotation; 
+             to: ${rotX} ${rotY} ${rotZ}; 
+             dur: ${duration}; 
+             easing: linear`);
+          
+          // スケールアニメーション（フェードアウト効果）
+          confetti.setAttribute('animation__scale',
+            `property: scale; 
+             from: 1 1 1; 
+             to: 0.3 0.3 0.3; 
+             dur: ${duration}; 
+             easing: easeInQuad`);
+          
+          container.appendChild(confetti);
+          confettiElements.push(confetti);
+          
+          // アニメーション終了後に削除
+          setTimeout(() => {
+            if (confetti.parentNode) {
+              confetti.parentNode.removeChild(confetti);
+            }
+          }, duration + 100);
+        }
+        
+        return confettiElements;
+      }
+      
+      // 各賞のテーマカラーに合わせた花吹雪の色設定
+      const confettiColors = {
+        'award-0': ['#FF1744', '#FF6B9D', '#FFD700', '#FF8C00', '#FF4500'], // Creative Spark Award - 赤系
+        'award-1': ['#FFD700', '#FFA500', '#FFE44D', '#FFF8DC', '#FFC125'], // Grand Creator Award - 黄色/金色系
+        'award-2': ['#4169E1', '#1E90FF', '#00BFFF', '#87CEEB', '#4682B4']  // Best Co-Creation Award - 青色系
+      };
+      
+      // MindARのターゲット検出イベントを監視
+      const scene = document.querySelector('a-scene');
+      const confettiIntervals = {};
+      
+      // ターゲットが見つかった時の処理
+      scene.addEventListener('arReady', () => {
+        console.log('AR is ready');
+      });
+      
+      // 各ターゲットエンティティにイベントリスナーを追加
+      ['award-0', 'award-1', 'award-2'].forEach((awardId, index) => {
+        const award = document.querySelector('#' + awardId);
+        if (award) {
+          // ターゲットが見つかった時
+          award.addEventListener('targetFound', () => {
+            console.log(`${awardId} found`);
+            const colors = confettiColors[awardId];
+            const containerId = `confetti-${index}`;
+            
+            // 即座に花吹雪を生成
+            createConfetti(containerId, colors);
+            
+            // 継続的に花吹雪を生成（1.5秒ごと）
+            if (confettiIntervals[containerId]) {
+              clearInterval(confettiIntervals[containerId]);
+            }
+            confettiIntervals[containerId] = setInterval(() => {
+              createConfetti(containerId, colors);
+            }, 1500);
+          });
+          
+          // ターゲットが見失われた時
+          award.addEventListener('targetLost', () => {
+            console.log(`${awardId} lost`);
+            const containerId = `confetti-${index}`;
+            if (confettiIntervals[containerId]) {
+              clearInterval(confettiIntervals[containerId]);
+              delete confettiIntervals[containerId];
+            }
+          });
+        }
+      });
+      
+      // フォールバック: 定期的にチェックして花吹雪を生成
+      setInterval(() => {
+        ['award-0', 'award-1', 'award-2'].forEach((awardId, index) => {
+          const award = document.querySelector('#' + awardId);
+          if (award && award.getAttribute('visible') !== false) {
+            const containerId = `confetti-${index}`;
+            // 既にインターバルが設定されていない場合のみ生成
+            if (!confettiIntervals[containerId]) {
+              const colors = confettiColors[awardId];
+              createConfetti(containerId, colors);
+            }
+          }
+        });
+      }, 3000);
+    </script>
+</body>
 </html>
-```
-
-### 安定させるための3つのポイント
-
-1.  **画像のデザインを変える:**
-    3つの賞状が「文字だけ違う」デザインだと、AIが区別できずに誤認識（金賞なのに銀が出てくるなど）します。
-    * 金賞は背景が黄色っぽい、銀賞は青っぽいなど、**色味やロゴの配置を大きく変える**のがコツです。
-2.  **照明:**
-    会場が暗いと認識しづらくなります。スマホのライトをつけるか、明るい場所でかざしてもらうようアナウンスしてください。
-3.  **枠線:**
-    賞状に太めの「飾り枠」をつけると、AIが「ここが平面だ！」と認識しやすくなり、トロフィーがプルプル震えにくくなります。
-
-### 必要なファイル構成
-GitHubにアップするときは以下の2つがあれば動きます。
-```
-/ (ルートフォルダ)
-  ├── index.html     (上のコード)
-  └── targets.mind   (STEP1で作ったファイル)
